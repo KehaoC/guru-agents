@@ -59,7 +59,7 @@ async def parse_feeds(url: str, source: str) -> list[dict]:
 
             items.append(item)
 
-    elif source == 'google':
+    elif source == 'google' or source == 'tiktok':
         # RSS 2.0 format for Google News
         # Find all item elements (RSS 2.0 uses 'item' instead of 'entry')
         for item_elem in root.findall('.//item'):
@@ -97,30 +97,45 @@ if __name__ == '__main__':
     import asyncio
 
     async def test_feeds():
-        print("=" * 80)
-        print("Testing Reddit RSS Feed")
-        print("=" * 80)
+        # print("=" * 80)
+        # print("Testing Reddit RSS Feed")
+        # print("=" * 80)
 
-        # # Test Reddit RSS parsing
-        reddit_items = await parse_feeds("https://www.reddit.com/r/worldnews/.rss", "reddit")
-        print(f"Found {len(reddit_items)} Reddit items\n")
+        # # # Test Reddit RSS parsing
+        # reddit_items = await parse_feeds("https://www.reddit.com/r/worldnews/.rss", "reddit")
+        # print(f"Found {len(reddit_items)} Reddit items\n")
 
-        # Print first 2 items
-        for i, item in enumerate(reddit_items[:2], 1):
-            print(f"--- Reddit Item {i} ---")
-            print(f"Title: {item['title']}")
-            print(f"URL: {item['url']}")
-            print(f"Published: {item['published']}")
-            print()
+        # # Print first 2 items
+        # for i, item in enumerate(reddit_items[:2], 1):
+        #     print(f"--- Reddit Item {i} ---")
+        #     print(f"Title: {item['title']}")
+        #     print(f"URL: {item['url']}")
+        #     print(f"Published: {item['published']}")
+        #     print()
 
-        print("\n" + "=" * 80)
-        print("Testing Google News RSS Feed")
-        print("=" * 80)
+        # print("\n" + "=" * 80)
+        # print("Testing Google News RSS Feed")
+        # print("=" * 80)
+
+        # # Test Google News RSS parsing
+        # google_items = await parse_feeds(
+        #     "https://news.google.com/rss?hl=en-SG&gl=SG&ceid=SG:en",
+        #     "google"
+        # )
+        # print(f"Found {len(google_items)} Google News items\n")
+
+        # # Print first 2 items
+        # for i, item in enumerate(google_items[:2], 1):
+        #     print(f"--- Google News Item {i} ---")
+        #     print(f"Title: {item['title']}")
+        #     print(f"URL: {item['url'][:80]}...")
+        #     print(f"Published: {item['published']}")
+        #     print()
 
         # Test Google News RSS parsing
         google_items = await parse_feeds(
-            "https://news.google.com/rss?hl=en-SG&gl=SG&ceid=SG:en",
-            "google"
+            "https://www.thesun.co.uk/topic/tiktok/feed/",
+            "tiktok"
         )
         print(f"Found {len(google_items)} Google News items\n")
 

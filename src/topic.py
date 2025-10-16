@@ -5,7 +5,8 @@ from typing import Any
 
 RSS_DICT = {
     # "raddit": "https://www.reddit.com/r/worldnews/.rss", # raddit/worldnews
-    "google": "https://news.google.com/rss?hl=en-SG&gl=SG&ceid=SG:en" # sg first as a test
+    "google": "https://news.google.com/rss?hl=en-SG&gl=SG&ceid=SG:en", # sg first as a test kinda serious
+    "tiktok": "https://www.thesun.co.uk/topic/tiktok/feed/"
 }
 
 
@@ -25,8 +26,8 @@ async def fetch_trends_from_rss(args: dict[str: Any]):
         all_trends = await _fetch_trends_from_rss()
         print(f"DEBUG: Fetched {len(all_trends)} trends")  # 调试信息
 
-        # 只返回前10条，避免数据过大
-        trends = all_trends[:10]
+        # 暂时先返回前几条 方便调试
+        trends = all_trends[:5]
 
         # 按照 SDK 要求的格式返回
         result = {
@@ -35,7 +36,7 @@ async def fetch_trends_from_rss(args: dict[str: Any]):
             "trends": trends
         }
 
-        # 必须按照官方格式返回: {"content": [{"type": "text", "text": "..."}]}
+        # 注意啊，有标准形式 {"content": [{"type": "text", "text": "..."}]}
         return {
             "content": [{
                 "type": "text",
@@ -45,7 +46,7 @@ async def fetch_trends_from_rss(args: dict[str: Any]):
     except Exception as e:
         import traceback
         error_msg = f"Error fetching trends: {str(e)}\n{traceback.format_exc()}"
-        print(error_msg)  # 打印到控制台以便调试
+        print(error_msg)  # 调试用
         return {
             "content": [{
                 "type": "text",
