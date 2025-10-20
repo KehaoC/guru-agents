@@ -76,8 +76,10 @@ export interface CUIConfig {
  */
 export const DEFAULT_CONFIG: Omit<CUIConfig, 'machine_id' | 'authToken'> = {
   server: {
-    host: 'localhost',
-    port: 3001
+    // Use 0.0.0.0 to accept external connections in containers (Railway, Docker, etc.)
+    // Use PORT env var if available (Railway, Heroku, etc.), otherwise default to 3001
+    host: process.env.HOST || '0.0.0.0',
+    port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3001
   },
   interface: {
     colorScheme: 'system',

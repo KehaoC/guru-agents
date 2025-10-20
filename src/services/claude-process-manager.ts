@@ -24,8 +24,8 @@ const __dirname = dirname(__filename);
  * Manages Claude CLI processes and their lifecycle
  */
 export class ClaudeProcessManager extends EventEmitter {
-  private processes: Map<string, ChildProcess> = new Map();
-  private outputBuffers: Map<string, string> = new Map();
+  private processes: Map<string, ChildProcess> = new Map();  // steamingId 子进程
+  private outputBuffers: Map<string, string> = new Map(); // 输出缓冲区
   private timeouts: Map<string, NodeJS.Timeout[]> = new Map();
   private conversationConfigs: Map<string, ConversationConfig> = new Map();
   private claudeExecutablePath: string;

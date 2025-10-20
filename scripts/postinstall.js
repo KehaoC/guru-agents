@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { chmodSync } from 'fs';
+import { chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -18,6 +18,13 @@ console.log('Setting executable permissions...');
 
 executableFiles.forEach(file => {
   const filePath = join(__dirname, '..', file);
+
+  // Skip if file doesn't exist yet (e.g., during npm install before build)
+  if (!existsSync(filePath)) {
+    console.log(`⊘ Skipping ${file} (not built yet)`);
+    return;
+  }
+
   try {
     chmodSync(filePath, '755');
     console.log(`✓ Made ${file} executable`);
