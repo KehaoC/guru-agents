@@ -5,7 +5,7 @@ from typing import Any
 
 RSS_DICT = {
     # "raddit": "https://www.reddit.com/r/worldnews/.rss", # raddit/worldnews
-    "google": "https://news.google.com/rss?hl=en-SG&gl=SG&ceid=SG:en", # sg first as a test kinda serious
+    # "google": "https://news.google.com/rss?hl=en-SG&gl=SG&ceid=SG:en", # sg first as a test kinda serious
     "tiktok": "https://www.thesun.co.uk/topic/tiktok/feed/"
 }
 

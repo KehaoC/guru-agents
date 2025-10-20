@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:pypi.org)",
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:thesun.co.uk"
     ],
     "deny": [],
     "ask": []
