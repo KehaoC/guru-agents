@@ -1,7 +1,8 @@
 from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient, query, create_sdk_mcp_server
 from cli_tools import parse_and_print_message, parser, print_rich_message, get_user_input
 from rich.console import Console
-from topic import topic_server
+from topic import topic_mcp
+from lark import lark_mcp
 import os
 from dotenv import load_dotenv
 import prompt
@@ -10,14 +11,13 @@ import prompt
 load_dotenv()
 
 MODEL = "haiku"
-FEISHU_APP_ID = os.getenv("APP_ID")
-FEISHU_SECRET_KEY = os.getenv("APP_SECRET")
+
 
 async def main():
     console = Console() 
     args = parser.parse_args()
 
-    welcoming_message = "GURU GREATEERBAY AGENT"
+    welcoming_message = "GURU GREATEERBAY AGENT V1.0.0"
     print_rich_message('system', welcoming_message, console)
 
     options = ClaudeAgentOptions(
@@ -25,24 +25,12 @@ async def main():
         setting_sources=["project"],
         model = MODEL,
         mcp_servers={
-            "topic": topic_server,
-            "lark-mcp": {
-                "command": "npx",
-                "args": [
-                    "-y",
-                    "@larksuiteoapi/lark-mcp",
-                    "mcp",
-                    "-a",
-                    FEISHU_APP_ID,
-                    "-s",
-                    FEISHU_SECRET_KEY,
-                    "--oauth"
-                ]
-            }
+            "topic-mcp": topic_mcp,
+            "lark-mcp": lark_mcp
         },
         allowed_tools = [
             # Topic
-            "mcp__topic__fetch_trends_from_rss",  # 从 RSS 源获取热点趋势
+            "mcp__topic-mcp__fetch_trends_from_rss",  # 从 RSS 源获取热点趋势
 
             # Feishu (Lark) - Bitable APIs (多维表格)
             "mcp__lark-mcp__bitable_v1_app_create",              # 创建多维表格应用
@@ -76,7 +64,7 @@ async def main():
             "mcp__lark-mcp__wiki_v2_space_getNode",              # 获取知识库空间节点信息
 
             # Other tools
-            "WebFetch"  # 从网页抓取内容
+            # "WebFetch"  # 从网页抓取内容
         ]
     )
 

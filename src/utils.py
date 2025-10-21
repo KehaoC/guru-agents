@@ -49,18 +49,33 @@ async def parse_feeds(url: str, source: str) -> list[dict]:
             published_elem = entry.find('atom:published', ns)
             published = published_elem.text if published_elem is not None else ''
 
+            # Extract image URL from media:thumbnail or media:content
+            image_url = ''
+            media_thumbnail = entry.find('media:thumbnail', ns)
+            if media_thumbnail is not None:
+                image_url = media_thumbnail.get('url', '')
+            else:
+                media_content = entry.find('media:content', ns)
+                if media_content is not None:
+                    image_url = media_content.get('url', '')
+
             # Create unified item structure
             item = {
                 'title': title,
                 'url': url,
                 # 'description': description,
-                'published': published
+                'published': published,
+                'image_url': image_url
             }
 
             items.append(item)
 
     elif source == 'google' or source == 'tiktok':
         # RSS 2.0 format for Google News
+        # Define namespaces for media elements
+        ns = {'media': 'http://search.yahoo.com/mrss/',
+              'content': 'http://purl.org/rss/1.0/modules/content/'}
+
         # Find all item elements (RSS 2.0 uses 'item' instead of 'entry')
         for item_elem in root.findall('.//item'):
             # Extract title
@@ -79,12 +94,33 @@ async def parse_feeds(url: str, source: str) -> list[dict]:
             pub_date_elem = item_elem.find('pubDate')
             published = pub_date_elem.text if pub_date_elem is not None else ''
 
+            # Extract image URL from multiple possible sources
+            image_url = ''
+
+            # Try media:thumbnail first
+            media_thumbnail = item_elem.find('media:thumbnail', ns)
+            if media_thumbnail is not None:
+                image_url = media_thumbnail.get('url', '')
+
+            # Try media:content if no thumbnail
+            if not image_url:
+                media_content = item_elem.find('media:content', ns)
+                if media_content is not None:
+                    image_url = media_content.get('url', '')
+
+            # Try enclosure tag (common in RSS 2.0)
+            if not image_url:
+                enclosure = item_elem.find('enclosure')
+                if enclosure is not None and enclosure.get('type', '').startswith('image/'):
+                    image_url = enclosure.get('url', '')
+
             # Create unified item structure
             item = {
                 'title': title,
                 'url': url,
                 # 'description': description,
-                'published': published
+                'published': published,
+                'image_url': image_url
             }
 
             items.append(item)
@@ -145,6 +181,7 @@ if __name__ == '__main__':
             print(f"Title: {item['title']}")
             print(f"URL: {item['url'][:80]}...")
             print(f"Published: {item['published']}")
+            print(f"Image URL: {item.get('image_url', 'No image')}")
             print()
 
     asyncio.run(test_feeds())
