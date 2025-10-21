@@ -27,7 +27,7 @@ async def fetch_trends_from_rss(args: dict[str: Any]):
         print(f"DEBUG: Fetched {len(all_trends)} trends")  # 调试信息
 
         # 暂时先返回前几条 方便调试
-        trends = all_trends[:10]
+        trends = all_trends[:5]
 
         # 按照 SDK 要求的格式返回
         result = {
@@ -54,8 +54,8 @@ async def fetch_trends_from_rss(args: dict[str: Any]):
             }]
         }
 
-topic_mcp = create_sdk_mcp_server(
-    "topic",
+topic_server = create_sdk_mcp_server(
+    "topic-mcp",
     "1.0.0",
     [fetch_trends_from_rss]
 )

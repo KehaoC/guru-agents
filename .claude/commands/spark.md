@@ -4,17 +4,19 @@ description: Find heated topic from online to generate insipiration for ads.
 model: claude-sonnet-4-5-20250929
 ---
 
-1. Using fetch_trends_from_rss tools get heated topic from online.
-2. Format and refactor the information as inspiration seed.
-3. Select 5 best ideas that are relevant to "Find Difference" game product.
-4. For each selected topic, evaluate and generate:
-   - **实时热度** (Real-time Heat Score): AI evaluation score from 1-5 based on topic popularity, trend velocity, and relevance
-   - **热点日期** (Hot Date): Today's date when the command is triggered (format: yyyy/MM/dd)
-6. Create new rows in lark bitable [https://scnmrtumk0zm.feishu.cn/wiki/I1iAwzwT3i1b6BkhgCecjeHvnkc?table=wkfNU1GEwuXZQJJK] with:
+1. Fetch trending topics using `fetch_trends_from_rss` tools
+2. Select **ONLY 3** best ideas relevant to "Find Difference" game
+3. For each idea, generate `实时热度（系统预测）` (1-5) and extract `热点日期` timestamp from RSS pubDate
+4. **Upload images** (BEFORE creating rows):
+   - Extract `image_url` from the 3 ideas
+   - Call `mcp__custom-lark-mcp__upload_images_to_lark(urls=[...], app_token='WJ47bnLAfaoRFGsPreucdSoknXd')`
+   - Store URL-to-token mapping
+5. Create 3 rows using exact field names from example below
 
-## Tool Use Example
+## Example (from actual successful run)
 
 ```python
+# Example from actual run:
 mcp__lark-mcp__bitable_v1_appTableRecord_create(
     path={
         'app_token': 'WJ47bnLAfaoRFGsPreucdSoknXd',
@@ -22,64 +24,44 @@ mcp__lark-mcp__bitable_v1_appTableRecord_create(
     },
     data={
         'fields': {
-            'Idea': 'AI换脸挑战',
+            'Idea': '曼联球迷长发挑战',
             '来源': ['热点'],
-            '设计师参考图片需求': '对比真实明星照片与AI换脸后的细节差异，如眼神、肤质、五官比例等微妙变化',
+            '设计师参考图片需求': '对比球迷不同阶段发型变化,找出发长、发型、脸部表情的细微差异',
             '实时热度（系统预测）': 4,
-            '热点日期': 1737331200000,
+            '热点日期': 1729468800000,
             '目标产品': ['APFD'],
-            'url': 'https://example.com/trending-topic'
+            'url': 'https://www.thesun.co.uk/sport/37071986/united-we-strand-frank-illett-haircut-manchester-utd-liverpool/',
+            'Idea 图例': [{'file_token': 'NyxPbq3NNo1pa1xl33bcr8dNncz'}]
         }
     },
     useUAT=True
 )
 ```
 
-## Field Requirements
+## Required Fields (Exact Field Names)
 
-**Topic名称 (Topic field, fldyHisKlR)**:
-- Must include SPECIFIC KEYWORDS that instantly reveal what's hot
-- Maximum 15-20 characters, make every word count
-- Capture the most eye-catching, concrete detail of the trend
-- Use vivid, specific terms over generic descriptions
-- Examples:
-  - ❌ Bad: "AI绘画爆火" (too vague)
-  - ✅ Good: "AI绘制赛博朋克城市"
-  - ❌ Bad: "春节红包大战"
-  - ✅ Good: "支付宝发10亿红包雨"
-  - ❌ Bad: "世界杯热潮"
-  - ✅ Good: "梅西捧杯刷屏全网"
+**CRITICAL**: Use these EXACT field names. Do NOT translate or modify them.
 
-**来源 (Source field, fld4z23xmO)**:
-- Always set to: "热点" (固定值)
-- No need to specify detailed source
+1. **`Idea`**: Topic title (15-20 chars max, specific keywords)
+   - Example: "曼联球迷长发挑战", "梅西捧杯刷屏全网"
 
-**图片需求 (Image Requirements field, fldPesZfWW)**:
-- Brief description of what visual elements would work for "Find Difference" game
-- Connect the topic to game mechanics (what differences to spot)
-- Keep under 100 characters
+2. **`来源`**: Array with single value `["热点"]` (always fixed)
 
-**Topic标签 (Tags field, fldC9OPibT)**:
-- Select appropriate tag from: "热点", "出量素材迭代", "节日", "经典IP"
-- Default to "热点" for trending topics
+3. **`设计师参考图片需求`**: Find-difference game description (<100 chars)
+   - Example: "对比球迷不同阶段发型变化,找出发长、发型、脸部表情的细微差异"
 
-**实时热度 (Real-time Heat)**:
-- AI-generated score (1-5) based on:
-  - Topic search volume and mentions
-  - Trend velocity (rising/stable/declining)
-  - Relevance to target audience
-  - Potential for viral content
+4. **`实时热度（系统预测）`**: Integer 1-5 based on popularity/trend velocity
 
-**热点日期 (Hot Date field, fld4EznD38)**:
-- Use the actual publication date from the fetched RSS content
-- Extract the date from the RSS feed item's published/pubDate field
-- Format: yyyy/MM/dd
-- This represents when the trending topic was originally published, not when it was fetched
+5. **`热点日期`**: Unix timestamp in milliseconds from RSS feed's pubDate
+   - Extract from feed, convert to milliseconds: `1729468800000`
 
-**URL (URL field)**:
-- The source URL from the RSS feed where the topic was fetched
-- Include the complete URL (e.g., https://example.com/trending-topic)
-- This allows tracking the original source of each trending topic
+6. **`目标产品`**: Array with value `["APFD"]` (always fixed)
+
+7. **`url`**: Source URL string from RSS feed
+
+8. **`Idea 图例`**: Array of objects with file_token from step 5
+   - Format: `[{"file_token": "NyxPbq3NNo1pa1xl33bcr8dNncz"}]`
+   - Omit if no image or upload failed
 
 ## Product Context
 Our product is **"Find Difference"** (找茬游戏), so you MUST:

@@ -1,7 +1,13 @@
 import xml.etree.ElementTree as ET
 from io import BytesIO
+import os
+from pathlib import Path
+from urllib.parse import urlparse
 
 import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 async def parse_feeds(url: str, source: str) -> list[dict]:
@@ -185,4 +191,181 @@ if __name__ == '__main__':
             print()
 
     asyncio.run(test_feeds())
+
+
+async def get_tenant_access_token(app_id: str = None, app_secret: str = None) -> str:
+    """
+    Get Feishu tenant_access_token for API authentication.
+
+    Args:
+        app_id: Feishu app ID (defaults to env APP_ID)
+        app_secret: Feishu app secret (defaults to env APP_SECRET)
+
+    Returns:
+        tenant_access_token string
+
+    Raises:
+        httpx.HTTPError: If the request fails
+    """
+    if app_id is None:
+        app_id = os.getenv("APP_ID")
+    if app_secret is None:
+        app_secret = os.getenv("APP_SECRET")
+
+    if not app_id or not app_secret:
+        raise ValueError("APP_ID and APP_SECRET must be provided or set in environment")
+
+    url = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal"
+
+    payload = {
+        "app_id": app_id,
+        "app_secret": app_secret
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload)
+        response.raise_for_status()
+        result = response.json()
+
+        if result.get("code") != 0:
+            raise Exception(f"Failed to get tenant_access_token: {result.get('msg')}")
+
+        return result["tenant_access_token"]
+
+
+async def download_image(url: str, timeout: float = 10.0) -> tuple[bytes, str]:
+    """
+    Download image from URL.
+
+    Args:
+        url: Image URL to download
+        timeout: Request timeout in seconds (default 10.0)
+
+    Returns:
+        Tuple of (image_data as bytes, filename)
+
+    Raises:
+        httpx.HTTPError: If download fails
+    """
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        response = await client.get(url)
+        response.raise_for_status()
+
+        # Extract filename from URL or generate one
+        parsed_url = urlparse(url)
+        filename = Path(parsed_url.path).name
+
+        # If no filename or extension, generate one based on content type
+        if not filename or '.' not in filename:
+            content_type = response.headers.get('content-type', '')
+            ext = 'jpg'  # default
+            if 'png' in content_type:
+                ext = 'png'
+            elif 'jpeg' in content_type or 'jpg' in content_type:
+                ext = 'jpg'
+            elif 'gif' in content_type:
+                ext = 'gif'
+            elif 'webp' in content_type:
+                ext = 'webp'
+            filename = f"image.{ext}"
+
+        return response.content, filename
+
+
+async def upload_image_to_lark(
+    image_data: bytes,
+    filename: str,
+    app_token: str,
+    tenant_access_token: str = None,
+    parent_type: str = "bitable_image"
+) -> str:
+    """
+    Upload image to Feishu/Lark and get file_token.
+
+    Args:
+        image_data: Image binary data
+        filename: Image filename
+        app_token: Bitable app_token (used as parent_node)
+        tenant_access_token: Authentication token (will auto-fetch if not provided)
+        parent_type: Upload point type (default: "bitable_image")
+
+    Returns:
+        file_token string that can be used in bitable attachment fields
+
+    Raises:
+        httpx.HTTPError: If upload fails
+    """
+    # Get token if not provided
+    if tenant_access_token is None:
+        tenant_access_token = await get_tenant_access_token()
+
+    url = "https://open.feishu.cn/open-apis/drive/v1/medias/upload_all"
+
+    # Prepare multipart form data
+    files = {
+        'file_name': (None, filename),
+        'parent_type': (None, parent_type),
+        'parent_node': (None, app_token),
+        'size': (None, str(len(image_data))),
+        'file': (filename, image_data, 'application/octet-stream')
+    }
+
+    headers = {
+        'Authorization': f'Bearer {tenant_access_token}'
+    }
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(url, headers=headers, files=files)
+        response.raise_for_status()
+        result = response.json()
+
+        if result.get("code") != 0:
+            raise Exception(f"Failed to upload image: {result.get('msg')}")
+
+        return result["data"]["file_token"]
+
+
+async def download_and_upload_image(
+    image_url: str,
+    app_token: str,
+    tenant_access_token: str = None,
+    max_retries: int = 3
+) -> str | None:
+    """
+    Download image from URL and upload to Feishu, with retry logic.
+
+    Args:
+        image_url: URL of image to download
+        app_token: Bitable app_token
+        tenant_access_token: Authentication token (will auto-fetch if not provided)
+        max_retries: Maximum number of retry attempts (default: 3)
+
+    Returns:
+        file_token string on success, None on failure
+    """
+    for attempt in range(max_retries):
+        try:
+            # Download image
+            image_data, filename = await download_image(image_url)
+
+            # Upload to Lark
+            file_token = await upload_image_to_lark(
+                image_data=image_data,
+                filename=filename,
+                app_token=app_token,
+                tenant_access_token=tenant_access_token
+            )
+
+            return file_token
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                # Wait before retry (exponential backoff)
+                import asyncio
+                await asyncio.sleep(2 ** attempt)
+                continue
+            else:
+                # Log error and return None on final failure
+                print(f"Failed to download and upload image {image_url}: {e}")
+                return None
 

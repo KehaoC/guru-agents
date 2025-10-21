@@ -1,8 +1,8 @@
 from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient, query, create_sdk_mcp_server
 from cli_tools import parse_and_print_message, parser, print_rich_message, get_user_input
 from rich.console import Console
-from topic import topic_mcp
-from lark import lark_mcp
+from topic import topic_server
+from lark import lark_server, custom_lark_server
 import os
 from dotenv import load_dotenv
 import prompt
@@ -25,8 +25,9 @@ async def main():
         setting_sources=["project"],
         model = MODEL,
         mcp_servers={
-            "topic-mcp": topic_mcp,
-            "lark-mcp": lark_mcp
+            "topic-mcp": topic_server,
+            "lark-mcp": lark_server,
+            "enhanced-lark-mcp": custom_lark_server
         },
         allowed_tools = [
             # Topic
@@ -62,6 +63,9 @@ async def main():
             # Feishu (Lark) - Wiki APIs (知识库)
             "mcp__lark-mcp__wiki_v1_node_search",                # 搜索知识库节点
             "mcp__lark-mcp__wiki_v2_space_getNode",              # 获取知识库空间节点信息
+
+            # Lark custom
+            "mcp__enhanced-lark-mcp__upload_images_to_lark"
 
             # Other tools
             # "WebFetch"  # 从网页抓取内容
