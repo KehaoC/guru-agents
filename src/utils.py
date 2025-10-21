@@ -76,11 +76,12 @@ async def parse_feeds(url: str, source: str) -> list[dict]:
 
             items.append(item)
 
-    elif source == 'google' or source == 'tiktok':
-        # RSS 2.0 format for Google News
+    elif source in ['google', 'tiktok', 'zhihu', 'nytimes']:
+        # RSS 2.0 format for Google News, TikTok, Zhihu, NYT, etc.
         # Define namespaces for media elements
         ns = {'media': 'http://search.yahoo.com/mrss/',
-              'content': 'http://purl.org/rss/1.0/modules/content/'}
+              'content': 'http://purl.org/rss/1.0/modules/content/',
+              'dc': 'http://purl.org/dc/elements/1.1/'}
 
         # Find all item elements (RSS 2.0 uses 'item' instead of 'entry')
         for item_elem in root.findall('.//item'):

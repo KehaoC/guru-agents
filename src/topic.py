@@ -3,10 +3,13 @@ from claude_agent_sdk import create_sdk_mcp_server, tool
 from utils import parse_feeds
 from typing import Any
 
+# https://www.nytimes.com/rss 里面有各个国家的
 RSS_DICT = {
     # "raddit": "https://www.reddit.com/r/worldnews/.rss", # raddit/worldnews
     # "google": "https://news.google.com/rss?hl=en-SG&gl=SG&ceid=SG:en", # sg first as a test kinda serious
-    "tiktok": "https://www.thesun.co.uk/topic/tiktok/feed/"
+    # "tiktok": "https://www.thesun.co.uk/topic/tiktok/feed/",  # pass
+    # "zhihu": "https://rsshub.app/zhihu/hot",  # pass
+    "nytimes": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
 }
 
 

@@ -25,7 +25,7 @@ mcp__lark-mcp__bitable_v1_appTableRecord_create(
     data={
         'fields': {
             'Idea': '曼联球迷长发挑战',
-            '来源': ['热点'],
+            '来源': ['热点-GGBond'],
             '设计师参考图片需求': '对比球迷不同阶段发型变化,找出发长、发型、脸部表情的细微差异',
             '实时热度（系统预测）': 4,
             '热点日期': 1729468800000,
@@ -45,7 +45,7 @@ mcp__lark-mcp__bitable_v1_appTableRecord_create(
 1. **`Idea`**: Topic title (15-20 chars max, specific keywords)
    - Example: "曼联球迷长发挑战", "梅西捧杯刷屏全网"
 
-2. **`来源`**: Array with single value `["热点"]` (always fixed)
+2. **`来源`**: Array with single value `["热点-GGBond"]` (always fixed)
 
 3. **`设计师参考图片需求`**: Find-difference game description (<100 chars)
    - Example: "对比球迷不同阶段发型变化,找出发长、发型、脸部表情的细微差异"
